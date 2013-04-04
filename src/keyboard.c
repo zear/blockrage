@@ -123,6 +123,59 @@ int key_get(int *code, int *press) {
           return 1;
 	}
 	break;
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+	break;
+      case SDL_JOYAXISMOTION:
+      {
+		int deadzone = 1000;
+		static int lockX = 0;
+		static int lockY = 0;
+
+		if(event.jaxis.axis == 0)
+		{
+			if((event.jaxis.value < -deadzone) && !lockX)
+			{
+				lockX = 1;
+				*code = SDLK_LEFT;
+				*press = 1;
+				return 1;
+			}
+			else if((event.jaxis.value > deadzone) && !lockX)
+			{
+				lockX = 1;
+				*code = SDLK_RIGHT;
+				*press = 1;
+				return 1;
+			}
+			else if((event.jaxis.value > -deadzone) && (event.jaxis.value < deadzone))
+			{
+				lockX = 0;
+			}
+		}
+		else if(event.jaxis.axis == 1)
+		{
+			if((event.jaxis.value < -deadzone) && !lockY)
+			{
+				lockY = 1;
+				*code = SDLK_UP;
+				*press = 1;
+				return 1;
+			}
+			else if((event.jaxis.value > deadzone) && !lockY)
+			{
+				lockY = 1;
+				*code = SDLK_DOWN;
+				*press = 1;
+				return 1;
+			}
+			else if((event.jaxis.value > -deadzone) && (event.jaxis.value < deadzone))
+			{
+				lockY = 0;
+			}
+		}
+      }
+	break;
       default:
         break;
     }
@@ -148,6 +201,53 @@ int key_get_press_char(int *character) {
           return keyev->keysym.sym;
 	}
 	break;
+      case SDL_JOYBUTTONDOWN:
+		return SDLK_DOWN;
+	break;
+      case SDL_JOYAXISMOTION:
+      {
+		int deadzone = 1000;
+		static int lockX = 0;
+		static int lockY = 0;
+
+		if(event.jaxis.axis == 0)
+		{
+			if((event.jaxis.value < -deadzone) && !lockX)
+			{
+				lockX = 1;
+				return SDLK_LEFT;
+			}
+			else if((event.jaxis.value > deadzone) && !lockX)
+			{
+				lockX = 1;
+				return SDLK_RIGHT;
+			}
+			else if((event.jaxis.value > -deadzone) && (event.jaxis.value < deadzone))
+			{
+				lockX = 0;
+				return 0;
+			}
+		}
+		else if(event.jaxis.axis == 1)
+		{
+			if((event.jaxis.value < -deadzone) && !lockY)
+			{
+				lockY = 1;
+				return SDLK_UP;
+			}
+			else if((event.jaxis.value > deadzone) && !lockY)
+			{
+				lockY = 1;
+				return SDLK_DOWN;
+			}
+			else if((event.jaxis.value > -deadzone) && (event.jaxis.value < deadzone))
+			{
+				lockY = 0;
+				return 0;
+			}
+		}
+      }
+	break;
       default:
         break;
     }
@@ -165,7 +265,7 @@ int key_get_press(void) {
 
 void key_2_str(int key, char *dst) {
   switch(key) {
-    case SDLK_ESCAPE: 		strcpy(dst,"escape");		break;
+    case SDLK_ESCAPE: 		strcpy(dst,"SELECT");		break;
     case SDLK_1:		strcpy(dst,"1");		break;
     case SDLK_2: 		strcpy(dst,"2");		break;
     case SDLK_3: 		strcpy(dst,"3");		break;
@@ -178,8 +278,8 @@ void key_2_str(int key, char *dst) {
     case SDLK_0: 		strcpy(dst,"0");		break;
     case SDLK_MINUS: 		strcpy(dst,"-");		break;
     case SDLK_EQUALS: 		strcpy(dst,"=");		break;
-    case SDLK_BACKSPACE: 	strcpy(dst,"bspace");		break;
-    case SDLK_TAB: 		strcpy(dst,"tab");		break;
+    case SDLK_BACKSPACE: 	strcpy(dst,"R shoulder");	break;
+    case SDLK_TAB: 		strcpy(dst,"L shoulder");	break;
     case SDLK_q: 		strcpy(dst,"q");		break;
     case SDLK_w: 		strcpy(dst,"w");		break;
     case SDLK_e: 		strcpy(dst,"e");		break;
@@ -192,8 +292,8 @@ void key_2_str(int key, char *dst) {
     case SDLK_p: 		strcpy(dst,"p");		break;
     case SDLK_LEFTBRACKET: 	strcpy(dst,"[");		break;
     case SDLK_RIGHTBRACKET: 	strcpy(dst,"]");		break;
-    case SDLK_RETURN: 		strcpy(dst,"return");		break;
-    case SDLK_LCTRL: 		strcpy(dst,"left ctrl");	break;
+    case SDLK_RETURN: 		strcpy(dst,"START");		break;
+    case SDLK_LCTRL: 		strcpy(dst,"A");		break;
     case SDLK_a: 		strcpy(dst,"a");		break;
     case SDLK_s: 		strcpy(dst,"s");		break;
     case SDLK_d: 		strcpy(dst,"d");		break;
@@ -206,7 +306,7 @@ void key_2_str(int key, char *dst) {
     case SDLK_SEMICOLON: 	strcpy(dst,";");		break;
     case SDLK_QUOTE: 		strcpy(dst,"'");		break;
     case SDLK_BACKQUOTE:	strcpy(dst,"`");		break;
-    case SDLK_LSHIFT: 		strcpy(dst,"left shft");	break;
+    case SDLK_LSHIFT: 		strcpy(dst,"X");		break;
     case SDLK_BACKSLASH: 	strcpy(dst,"\\");		break;
     case SDLK_z: 		strcpy(dst,"z");		break;
     case SDLK_x: 		strcpy(dst,"x");		break;
@@ -220,8 +320,8 @@ void key_2_str(int key, char *dst) {
     case SDLK_SLASH: 		strcpy(dst,"/");		break;
     case SDLK_RSHIFT: 		strcpy(dst,"right shft");	break;
     case SDLK_KP_MULTIPLY: 	strcpy(dst,"keypad *");		break;
-    case SDLK_LALT: 		strcpy(dst,"left alt");		break;
-    case SDLK_SPACE: 		strcpy(dst,"space");		break;
+    case SDLK_LALT: 		strcpy(dst,"B");		break;
+    case SDLK_SPACE: 		strcpy(dst,"Y");		break;
     case SDLK_CAPSLOCK: 	strcpy(dst,"caps lock");	break;
     case SDLK_F1: 		strcpy(dst,"f1");		break;
     case SDLK_F2: 		strcpy(dst,"f2");		break;
@@ -258,12 +358,12 @@ void key_2_str(int key, char *dst) {
     case SDLK_BREAK: 		strcpy(dst,"break");		break;
     case SDLK_SYSREQ:		strcpy(dst,"sysreq");		break;
     case SDLK_HOME: 		strcpy(dst,"home");		break;
-    case SDLK_UP: 		strcpy(dst,"up arrow");		break;
+    case SDLK_UP: 		strcpy(dst,"UP");		break;
     case SDLK_PAGEUP: 		strcpy(dst,"pageup");		break;
-    case SDLK_LEFT: 		strcpy(dst,"left arrow");	break;
-    case SDLK_RIGHT: 		strcpy(dst,"right arrow");	break;
+    case SDLK_LEFT: 		strcpy(dst,"LEFT");		break;
+    case SDLK_RIGHT: 		strcpy(dst,"RIGHT");		break;
     case SDLK_END: 		strcpy(dst,"end");		break;
-    case SDLK_DOWN: 		strcpy(dst,"down arrow");	break;
+    case SDLK_DOWN: 		strcpy(dst,"DOWN");		break;
     case SDLK_PAGEDOWN: 	strcpy(dst,"pagedown");		break;
     case SDLK_INSERT: 		strcpy(dst,"ins");		break;
     case SDLK_DELETE: 		strcpy(dst,"del");		break;

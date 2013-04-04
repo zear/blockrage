@@ -43,7 +43,7 @@ SDL_Color colors[256];
 int scr_x_size, scr_y_size;
 int scr_bytes_pp;
 
-static int double_size=1;
+static int double_size=0; // default scale
 
 void screen_lock(void) {
   if( SDL_MUSTLOCK(screen) ) {
@@ -153,10 +153,15 @@ static int gfx_mode_init(void) {
 
 int gfx_init(void) {
 
-  if(SDL_Init(SDL_INIT_VIDEO)<0) {
+  if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK)<0) {
     fprintf(stderr,"error initialising SDL: %s\n", SDL_GetError());
     return 0;
   }
+
+  SDL_JoystickEventState(SDL_ENABLE);
+  SDL_Joystick *joy = SDL_JoystickOpen(0);
+
+  SDL_ShowCursor(SDL_DISABLE);
   
   atexit(SDL_Quit);
 

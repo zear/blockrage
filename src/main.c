@@ -1564,7 +1564,7 @@ static void keys_default(void) {
   
   key_left[0]=SDLK_LEFT;
   key_right[0]=SDLK_RIGHT;
-  key_drop[0]=SDLK_RSHIFT;
+  key_drop[0]=SDLK_LCTRL;
   key_shift_up[0]=SDLK_UP;
   key_shift_down[0]=SDLK_DOWN;
   key_left[1]=SDLK_a;
@@ -1765,6 +1765,51 @@ static int make_pdir(char *fname) {
   return res;
 }
 
+static int rc_generate(char *fname) {
+  FILE *f;
+  char *home;
+  char *fpathname;
+  int home_l;  
+
+  if((f=fopen(fname,"wt"))==NULL) {
+    /* Maybe we need to create some directories in which
+       the file resides */
+    if(errno==ENOENT) {
+      if(!make_pdir(fname)) {
+        return 0;
+      } else {
+        f=fopen(fname,"wt");
+	if(!f) return 0;
+      }
+    }
+  }
+ 
+    home = getenv("HOME");
+    home_l = strlen(home);
+    if(home_l > SANE_PATH_LEN) {
+      fprintf(stderr,"Length of HOME is not sane\n");
+      home=NULL;
+      return EXIT_FAILURE;
+    }
+    if(home) {
+      fpathname = malloc_verify( home_l + 1);
+      strncpy(fpathname,home,home_l);
+      fpathname[home_l]=0;
+      
+      if(!rc_find_load()) // attempt to load the newly generated blockrage.rc
+	return EXIT_FAILURE;     
+    }
+
+  fprintf(f,"./blockrage.cfg\n");				// sys_config_file
+  fprintf(f,"%s/.blockrage/blockrage.cfg\n", fpathname);	// usr_config_file
+  fprintf(f,"./data/\n");					// datadir
+  fprintf(f,"%s/.blockrage/topten\n", fpathname);		// topten_file
+  fprintf(f,"test\n");						// tmp
+  fclose(f);
+  free(fpathname);
+  return 1;
+}
+
 static int config_save(char *fname) {
   FILE *f;
   
@@ -1828,7 +1873,39 @@ int main(int argc, char *argv[]) {
   first_execution=0;
 
   if(!rc_find_load())
-    return EXIT_FAILURE;
+  {
+    char *home;
+    char *fpathname;
+    char *frelname = ".blockrage/blockrage.rc";
+    int home_l;
+  
+    home = getenv("HOME");
+    home_l = strlen(home);
+    if(home_l > SANE_PATH_LEN) {
+      fprintf(stderr,"Length of HOME is not sane\n");
+      home=NULL;
+      return EXIT_FAILURE;
+    }
+    if(home) {
+      fpathname = malloc_verify( home_l + 1 + strlen(frelname) + 1);
+      strncpy(fpathname,home,home_l);
+      fpathname[home_l]=0;
+      cat_with_slash(fpathname,frelname);
+      
+      rc_generate(fpathname);
+      
+      free(fpathname);
+
+      if(!rc_find_load()) // attempt to load the newly generated blockrage.rc
+	return EXIT_FAILURE;     
+    }
+    else
+    {
+	return EXIT_FAILURE;
+    }
+
+//    return EXIT_FAILURE;
+  }
 
   if(!config_load(usr_config_file)) {
     first_execution = 1;

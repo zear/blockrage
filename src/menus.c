@@ -83,6 +83,7 @@ int topten_update(int newscore) {
   int i,j,k,finished,turnssincekey,l,turns;
   char *user_name;
   int character;
+  int newch = 97;
 
   i=0;
   while(newscore<topscore[i].score) {
@@ -100,7 +101,7 @@ int topten_update(int newscore) {
   
   /* Init name with the contents of USER environment variable */
   /* (if available) */
-  user_name = getenv("USER");
+  //user_name = getenv("USER");
   if(user_name) {
     strncpy(topscore[i].name,user_name,TOPSC_NAME_SIZE-1);
     topscore[i].name[TOPSC_NAME_SIZE-1]=0;
@@ -123,17 +124,52 @@ int topten_update(int newscore) {
       switch(k) {
         case 0: break;
 	
+	case SDLK_LCTRL:
 	case SDLK_RETURN:
 	  if(topscore[i].name[0]!=0) finished=1;
 	  break;
 	  
+	case SDLK_LEFT:
 	case SDLK_BACKSPACE:
 	  l=strlen(topscore[i].name);
-	  if(l>0)
+	  if(l>1)
+	  {
+            newch = topscore[i].name[l-2];
 	    topscore[i].name[l-1]=0;
+          }
+          else if(l == 1)
+          {
+		newch = 97;
+          }
+	  break;
+
+	case SDLK_UP:
+	  newch++;
+	  if(newch > 126)
+	  {
+		newch = 32;
+	  }
+	  break;
+
+	case SDLK_DOWN:
+	  newch--;
+	  if(newch < 32)
+	  {
+		newch = 126;
+	  }
+	  break;
+
+	case SDLK_RIGHT:
+	    l=strlen(topscore[i].name);
+	     if(l<TOPSC_NAME_SIZE) {
+	       topscore[i].name[l+1]=0;
+	       newch = 97;
+	       topscore[i].name[l]=newch;
+	     }
 	  break;
 	  
 	default:
+/*
 	  if(character!=0) {
 	    l=strlen(topscore[i].name);
 	     if(l<TOPSC_NAME_SIZE) {
@@ -141,8 +177,25 @@ int topten_update(int newscore) {
 	       topscore[i].name[l]=character;
 	     }
 	  }
+*/
 	  break;
       }
+
+      l=strlen(topscore[i].name);
+      if(l<TOPSC_NAME_SIZE)
+      {
+	if(l > 0)
+	{
+		topscore[i].name[l-1]=newch;
+	}
+	else // start a new name with an 'a' letter
+	{
+	       topscore[i].name[l+1]=0;
+	       newch = 97;
+	       topscore[i].name[l]=newch;
+	}
+      }
+
     } while (!(turns=is_next_turn()));
     
     SDL_Delay(SLEEP_MS);
@@ -349,19 +402,19 @@ void rdks_draw(int menupos, int pnum) {
   t_align=T_CENTER;
   
   key_2_str(key_left[pnum],s1);
-  v_printf(scr_x_size/2,y0+0*font[0].ch,menupos==0,"Move piece left:%s",s1);
+  v_printf(scr_x_size/2,y0+0*font[0].ch,menupos==0,"Move piece left: %s",s1);
   
   key_2_str(key_right[pnum],s1);
-  v_printf(scr_x_size/2,y0+1*font[0].ch,menupos==1,"Move piece right:%s",s1);
+  v_printf(scr_x_size/2,y0+1*font[0].ch,menupos==1,"Move piece right: %s",s1);
   
   key_2_str(key_shift_up[pnum],s1);
-  v_printf(scr_x_size/2,y0+2*font[0].ch,menupos==2,"Shift piece up:%s",s1);
+  v_printf(scr_x_size/2,y0+2*font[0].ch,menupos==2,"Shift piece up: %s",s1);
   
   key_2_str(key_shift_down[pnum],s1);
-  v_printf(scr_x_size/2,y0+3*font[0].ch,menupos==3,"Shift piece down:%s",s1);
+  v_printf(scr_x_size/2,y0+3*font[0].ch,menupos==3,"Shift piece down: %s",s1);
   
   key_2_str(key_drop[pnum],s1);
-  v_printf(scr_x_size/2,y0+4*font[0].ch,menupos==4,"Drop piece:%s",s1);
+  v_printf(scr_x_size/2,y0+4*font[0].ch,menupos==4,"Drop piece: %s",s1);
   
   v_print(scr_x_size/2,y0+5*font[0].ch,menupos==5,"Return to Options Menu");
   
@@ -393,6 +446,7 @@ void redefinekeys(int pnum) {
         case SDLK_UP:   if(menupos>0) menupos--; break;	// up arrow
         case SDLK_DOWN: if(menupos<5) menupos++; break;	// down arrow
 //        case -1: rmain=1; quit=1; break;		// alt-x
+	case SDLK_LCTRL:
         case SDLK_RETURN: {				// return
           switch(menupos) {
 	    case 0: redefinekey(&key_left[pnum]); break;
@@ -486,6 +540,7 @@ void options(void) {
 	  }
           break;
 //        case 0x1b78   : rmain=1; quit=1; break;		// alt-x
+	case SDLK_LCTRL:
         case SDLK_RETURN: {					// return
           switch(menupos) {
 	    case 5: redefinekeys(0); break;
@@ -583,6 +638,7 @@ void pause_menu(void) {
 	  }
           break;
 //        case -1: rmain=1; quit=1; break;		// alt-x
+	case SDLK_LCTRL:
         case SDLK_RETURN: {				// return
           switch(menupos) {
 	    case 0: rmain=1; break;
@@ -630,6 +686,7 @@ void menu(void) {
         case SDLK_UP: if(menupos>0) menupos--; break;	// up arrow
         case SDLK_DOWN: if(menupos<4) menupos++; break;	// down arrow
 //        case -1: quit=1; break;				// alt-x
+	case SDLK_LCTRL:
         case SDLK_RETURN: {				// return
           switch(menupos) {
   	    case 0: players=1; game(); break;

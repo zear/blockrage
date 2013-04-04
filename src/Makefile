@@ -1,3 +1,18 @@
+# Generated automatically from Makefile.in by configure
+
+CC=mipsel-linux-gcc
+MAKE=make
+CFLAGS=-s -O2 -Wall `sdl-config --cflags`  -DSYSCONFDIR=\"${sysconfdir}/${progname}\"
+LDFLAGS=
+LIBS=`sdl-config --libs` -lm
+XSUF=
+prefix=/usr/local
+exec_prefix=${prefix}
+progname=blockrage
+sysconfdir=${prefix}/etc
+bindir=${exec_prefix}/bin
+datadir=${prefix}/share
+mandir=${prefix}/man
 OBJS    = main.o gfxout.o gfxlib.o menus.o keyboard.o bg.o sound.o global.o timer.o
 
 $(progname)$(XSUF): $(OBJS)

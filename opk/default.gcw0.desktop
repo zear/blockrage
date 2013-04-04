@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Blockrage
+Comment=Highly addictive falling blocks game
+Exec=blockrage.elf
+Terminal=false
+Type=Application
+StartupNotify=true
+Icon=blockrage
+Categories=games;
